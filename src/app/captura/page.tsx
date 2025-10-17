@@ -5,6 +5,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://vmhipnidyvqelwhktjms.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtaGlwbmlkeXZxZWx3aGt0am1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2MjY2MDQsImV4cCI6MjA3NjIwMjYwNH0.oBp6nC0rVuRlmkQj6D5hsHirhpLNEgLNQU8wHQaQ8AQ'
+);
 
 const schema = z.object({
   email: z.string().email('Email inválido'),
@@ -20,9 +26,24 @@ export default function Captura() {
   });
 
   const onSubmit = async (data: FormData) => {
-    console.log(data);
-    setSubmitted(true);
-  };
+  try {
+    const { error } = await supabase
+      .from('leads')
+      .insert([{ email: data.email, question: data.question }]);
+
+    if (error) {
+      console.error('Erro Supabase:', error);
+      alert('Falha ao enviar. Verifique o console para mais detalhes.');
+    } else {
+      setSubmitted(true);
+    }
+  } catch (err) {
+    console.error('Erro geral:', err);
+    alert('Erro inesperado. Veja o console.');
+  }
+};
+
+
 
   if (submitted) {
     return (
